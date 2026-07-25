@@ -796,7 +796,51 @@ async function deleteExpense(id){
   await saveKey("expenses", state.expenses);
   renderExpenses();
 }
+/* ---------------- Customers ---------------- */
 
+async function loadCustomers(){
+  const { data, error } = await supabaseClient
+    .from("customers")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if(error){
+    console.log("Customer loading error:", error);
+    return [];
+  }
+
+  return data || [];
+}
+
+function renderCustomers(){
+
+  const el = document.getElementById("customerList");
+
+  if(!el) return;
+
+  if(state.customers.length === 0){
+    el.innerHTML = `<div class="empty">
+      <div class="big">👤</div>
+      <p>No customers added yet.</p>
+    </div>`;
+    return;
+  }
+
+  el.innerHTML = state.customers.map(c => `
+    <div class="exp-item">
+      <div>
+        <div style="font-weight:600;">${escapeHtml(c.name)}</div>
+        <div style="font-size:12px;">
+          ${escapeHtml(c.phone || "")}
+        </div>
+      </div>
+
+      <div class="mono">
+        ₹${c.balance || 0}
+      </div>
+    </div>
+  `).join("");
+}
 /* ---------------- Init ---------------- */
 async function init(){
   document.getElementById("todayDate").textContent = new Date().toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'});
@@ -824,6 +868,7 @@ state.customers = cust;
   renderMessages();
   renderMarketing();
   renderExpenses();
+  renderCustomers();
 }
 init();
 </script>
