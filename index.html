@@ -846,7 +846,6 @@ async function init(){
   document.getElementById("todayDate").textContent = new Date().toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'});
   renderTabs();
   addInvoiceRow();
-  const [inv, appt, exp, msg, mk] = await Promise.all([
     const [inv, appt, exp, msg, mk, cust] = await Promise.all([
   loadKey("invoices"), 
   loadKey("appointments"), 
