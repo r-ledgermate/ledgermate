@@ -803,9 +803,21 @@ async function init(){
   renderTabs();
   addInvoiceRow();
   const [inv, appt, exp, msg, mk] = await Promise.all([
-    loadKey("invoices"), loadKey("appointments"), loadKey("expenses"), loadKey("messages"), loadKey("marketing")
+    const [inv, appt, exp, msg, mk, cust] = await Promise.all([
+  loadKey("invoices"), 
+  loadKey("appointments"), 
+  loadKey("expenses"), 
+  loadKey("messages"), 
+  loadKey("marketing"),
+  loadCustomers()
   ]);
-  state.invoices = inv; state.appointments = appt; state.expenses = exp; state.messages = msg; state.marketing = mk;
+  state.invoices = inv;
+state.appointments = appt;
+state.expenses = exp;
+state.messages = msg;
+state.marketing = mk;
+state.customers = cust;
+  renderCustomers();
   renderDashboard();
   renderInvoices();
   renderAppointments();
