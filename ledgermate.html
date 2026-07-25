@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LedgerMate — AI Business Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F2F4F0;
+    --page: repeating-linear-gradient(to bottom, #FFFFFF 0px, #FFFFFF 35px, #FBFCFA 36px);
+    --card:#FFFFFF;
+    --ink:#1C2521;
+    --ink-soft:#5B6B62;
+    --primary:#24483A;
+    --primary-deep:#132A21;
+    --brass:#B4842D;
+    --brass-pale:#F5E6C8;
+    --rose:#A85246;
+    --rose-pale:#F5E0DC;
+    --green:#3E7C52;
+    --green-pale:#E1F0E5;
+    --red:#B0453A;
+    --red-pale:#F7E2E0;
+    --line:#DEE3DB;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(20,30,25,.05), 0 8px 22px rgba(20,30,25,.07);
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  h1,h2,h3,.display{ font-family:'Fraunces',serif; letter-spacing:-0.01em; }
+  .mono{ font-family:'IBM Plex Mono',monospace; }
+
+  .shell{ max-width:920px; margin:0 auto; padding:22px 18px 70px; }
+
+  /* Header */
+  header.top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .brand{ display:flex; align-items:center; gap:11px; }
+  .brand-mark{ width:38px; height:38px; border-radius:9px; background:var(--primary); display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow); flex-shrink:0; }
+  .brand-name{ font-size:20px; font-weight:700; color:var(--primary-deep); }
+  .brand-sub{ font-size:11.5px; color:var(--ink-soft); margin-top:-2px; }
+  .today{ font-size:12.5px; color:var(--ink-soft); text-align:right; }
+  .today .d{ font-weight:600; color:var(--ink); font-family:'IBM Plex Mono',monospace; }
+
+  /* Ledger tab nav */
+  .ledger-tabs{ display:flex; gap:5px; overflow-x:auto; padding:0 2px; scrollbar-width:none; }
+  .ledger-tabs::-webkit-scrollbar{ display:none; }
+  .ledger-tab{
+    flex-shrink:0; display:flex; align-items:center; gap:7px; padding:11px 16px 13px;
+    border-radius:11px 11px 0 0; font-weight:600; font-size:13.5px; cursor:pointer;
+    color:var(--ink-soft); background:transparent; border:none; font-family:inherit; white-space:nowrap;
+  }
+  .ledger-tab svg{ width:15px; height:15px; opacity:.75; }
+  .ledger-tab.active{ background:var(--card); color:var(--primary-deep); box-shadow:0 -1px 0 var(--line) inset; }
+  .ledger-tab.active svg{ opacity:1; }
+
+  .page{ background:var(--page); border-radius:0 12px 12px 12px; box-shadow:var(--shadow); padding:24px; border:1px solid var(--line); min-height:400px; }
+
+  .panel{ display:none; }
+  .panel.active{ display:block; animation:rise .3s ease; }
+  @keyframes rise{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  /* Generic bits */
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px; margin-bottom:14px; }
+  .section-title{ font-size:12px; text-transform:uppercase; letter-spacing:.09em; color:var(--ink-soft); font-weight:700; margin:0 0 12px; }
+  .row{ display:flex; gap:12px; flex-wrap:wrap; }
+  .row > *{ flex:1; min-width:140px; }
+
+  label.f{ display:block; font-size:12.5px; font-weight:600; color:var(--ink); margin-bottom:5px; }
+  input[type=text], input[type=number], input[type=date], input[type=time], textarea, select{
+    width:100%; border:1.5px solid var(--line); border-radius:10px; padding:10px 12px;
+    font-family:inherit; font-size:14px; color:var(--ink); background:#fff;
+  }
+  textarea{ resize:vertical; min-height:70px; }
+  input:focus, textarea:focus, select:focus{ outline:2px solid var(--brass); outline-offset:1px; }
+
+  button{ font-family:inherit; cursor:pointer; }
+  .btn{ padding:10px 16px; border-radius:10px; border:none; background:var(--primary); color:#fff; font-weight:600; font-size:13.5px; }
+  .btn:hover{ background:var(--primary-deep); }
+  .btn.gold{ background:var(--brass); }
+  .btn.gold:hover{ background:#9C7027; }
+  .btn.ghost{ background:transparent; border:1.5px solid var(--line); color:var(--ink); }
+  .btn.ghost:hover{ border-color:var(--ink-soft); }
+  .btn.sm{ padding:7px 12px; font-size:12.5px; }
+  .btn:disabled{ opacity:.55; cursor:default; }
+  .btn-row{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
+
+  .tag{ display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:3px 9px; border-radius:99px; }
+  .tag.paid{ background:var(--green-pale); color:var(--green); }
+  .tag.pending{ background:var(--brass-pale); color:var(--brass); }
+  .tag.overdue{ background:var(--red-pale); color:var(--red); }
+
+  .empty{ text-align:center; padding:34px 16px; color:var(--ink-soft); }
+  .empty .big{ font-size:32px; margin-bottom:6px; }
+  .empty p{ font-size:13.5px; margin:4px 0 0; }
+
+  /* Dashboard */
+  .stat-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:16px; }
+  .stat{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:16px; }
+  .stat .label{ font-size:11.5px; color:var(--ink-soft); font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
+  .stat .val{ font-family:'IBM Plex Mono',monospace; font-size:22px; font-weight:600; margin-top:6px; color:var(--primary-deep); }
+  .stat .val.warn{ color:var(--rose); }
+  .feed-item{ display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); font-size:13.5px; }
+  .feed-item:last-child{ border-bottom:none; }
+  .feed-dot{ width:7px; height:7px; border-radius:50%; margin-top:6px; flex-shrink:0; background:var(--brass); }
+  .feed-time{ color:var(--ink-soft); font-size:12px; }
+
+  /* Invoice list */
+  .inv-item{ display:flex; justify-content:space-between; align-items:center; padding:13px 0; border-bottom:1px solid var(--line); gap:10px; flex-wrap:wrap; }
+  .inv-item:last-child{ border-bottom:none; }
+  .inv-left .client{ font-weight:600; font-size:14.5px; }
+  .inv-left .meta{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
+  .inv-right{ display:flex; align-items:center; gap:10px; }
+  .inv-amt{ font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:15px; }
+
+  .item-row{ display:flex; gap:8px; margin-bottom:8px; align-items:center; }
+  .item-row input{ flex:1; }
+  .item-row input.qty, .item-row input.rate{ max-width:90px; }
+  .remove-row{ background:none; border:none; color:var(--rose); font-size:18px; padding:4px 8px; }
+
+  .total-line{ display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:16px; font-weight:600; margin-top:10px; padding-top:10px; border-top:1.5px dashed var(--line); }
+
+  /* AI panels */
+  .ai-output{ background:var(--brass-pale); border:1px solid var(--brass); border-radius:12px; padding:14px 16px; margin-top:12px; font-size:14px; line-height:1.55; white-space:pre-wrap; }
+  .ai-output.loading{ color:var(--ink-soft); font-style:italic; }
+  .msg-history-item{ border:1px solid var(--line); border-radius:12px; padding:13px 15px; margin-bottom:10px; }
+  .msg-history-item .in{ font-size:13.5px; color:var(--ink-soft); margin-bottom:8px; }
+  .msg-history-item .in b{ color:var(--ink); }
+
+  /* Appointments */
+  .appt-item{ display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--line); align-items:center; }
+  .appt-item:last-child{ border-bottom:none; }
+  .appt-date{ background:var(--primary); color:#fff; border-radius:9px; padding:7px 10px; text-align:center; min-width:52px; font-family:'IBM Plex Mono',monospace; }
+  .appt-date .dow{ font-size:9px; text-transform:uppercase; opacity:.8; }
+  .appt-date .num{ font-size:16px; font-weight:600; line-height:1.1; }
+  .appt-info{ flex:1; }
+  .appt-info .title{ font-weight:600; font-size:14px; }
+  .appt-info .meta{ font-size:12px; color:var(--ink-soft); margin-top:2px; }
+
+  /* Expenses */
+  .exp-item{ display:flex; justify-content:space-between; align-items:center; padding:11px 0; border-bottom:1px solid var(--line); gap:10px; }
+  .exp-item:last-child{ border-bottom:none; }
+  .exp-cat{ font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-soft); background:var(--bg); padding:3px 8px; border-radius:99px; margin-top:3px; display:inline-block; }
+
+  .icon-btn{ background:none; border:none; color:var(--ink-soft); font-size:13px; padding:4px 6px; }
+  .icon-btn:hover{ color:var(--rose); }
+
+  .field-hint{ font-size:11.5px; color:var(--ink-soft); margin-top:-3px; margin-bottom:8px; }
+
+  .disclaimer{ font-size:11.5px; color:var(--ink-soft); background:var(--bg); border-radius:10px; padding:9px 12px; margin-top:8px; }
+
+  @media (max-width:640px){
+    .brand-name{ font-size:17px; }
+    .stat .val{ font-size:19px; }
+    .today{ display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="shell" id="app">
+
+  <header class="top">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v16H4V4z" stroke="white" stroke-width="1.6"/><path d="M8 9h8M8 13h8M8 17h5" stroke="white" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">LedgerMate</div>
+        <div class="brand-sub">your AI back office, in one page</div>
+      </div>
+    </div>
+    <div class="today">
+      <div>Today</div>
+      <div class="d" id="todayDate">—</div>
+    </div>
+  </header>
+
+  <nav class="ledger-tabs" id="tabs"></nav>
+
+  <div class="page">
+    <!-- DASHBOARD -->
+    <section class="panel active" id="panel-dashboard">
+      <div class="stat-grid" id="statGrid"></div>
+      <div class="card">
+        <div class="section-title">Recent activity</div>
+        <div id="activityFeed"></div>
+      </div>
+    </section>
+
+    <!-- INVOICES -->
+    <section class="panel" id="panel-invoices">
+      <div class="btn-row" style="margin-top:0;">
+        <button class="btn gold" onclick="toggleForm('invoiceForm')">+ New invoice</button>
+      </div>
+      <div class="card" id="invoiceForm" style="display:none;">
+        <div class="section-title">New invoice</div>
+        <div class="row">
+          <div>
+            <label class="f">Client name</label>
+            <input type="text" id="inv_client" placeholder="e.g. Sharma Traders">
+          </div>
+          <div>
+            <label class="f">Due date</label>
+            <input type="date" id="inv_due">
+          </div>
+        </div>
+        <div style="margin-top:12px;">
+          <label class="f">Line items</label>
+          <div id="invItemRows"></div>
+          <button class="btn ghost sm" onclick="addInvoiceRow()">+ Add item</button>
+        </div>
+        <div class="total-line"><span>Total</span><span id="invTotalPreview" class="mono">₹0</span></div>
+        <div class="btn-row">
+          <button class="btn" onclick="saveInvoice()">Save invoice</button>
+          <button class="btn ghost" onclick="toggleForm('invoiceForm')">Cancel</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">All invoices</div>
+        <div id="invoiceList"></div>
+      </div>
+    </section>
+
+    <!-- MESSAGES -->
+    <section class="panel" id="panel-messages">
+      <div class="card">
+        <div class="section-title">Draft a reply</div>
+        <label class="f">Customer's message</label>
+        <textarea id="msg_input" placeholder="Paste what your customer wrote, e.g. 'Is my order ready? I ordered 2 days ago.'"></textarea>
+        <div class="row" style="margin-top:10px;">
+          <div>
+            <label class="f">Reply tone</label>
+            <select id="msg_tone">
+              <option>Friendly & warm</option>
+              <option>Professional & concise</option>
+              <option>Apologetic (for a delay/issue)</option>
+              <option>Firm but polite (for a policy)</option>
+            </select>
+          </div>
+          <div>
+            <label class="f">Business context (optional)</label>
+            <input type="text" id="msg_context" placeholder="e.g. we run a home bakery in Gorakhpur">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn gold" id="msg_btn" onclick="generateReply()">✦ Draft reply</button>
+        </div>
+        <div id="msg_output"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">Past drafts</div>
+        <div id="messageHistory"></div>
+      </div>
+    </section>
+
+    <!-- APPOINTMENTS -->
+    <section class="panel" id="panel-appointments">
+      <div class="btn-row" style="margin-top:0;">
+        <button class="btn gold" onclick="toggleForm('apptForm')">+ New appointment</button>
+      </div>
+      <div class="card" id="apptForm" style="display:none;">
+        <div class="section-title">New appointment</div>
+        <div class="row">
+          <div>
+            <label class="f">Title</label>
+            <input type="text" id="appt_title" placeholder="e.g. Site visit — Mehta residence">
+          </div>
+          <div>
+            <label class="f">Client / contact</label>
+            <input type="text" id="appt_client" placeholder="e.g. Mr. Mehta, 98xxxxxxx0">
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <div>
+            <label class="f">Date</label>
+            <input type="date" id="appt_date">
+          </div>
+          <div>
+            <label class="f">Time</label>
+            <input type="time" id="appt_time">
+          </div>
+        </div>
+        <label class="f" style="margin-top:10px;">Notes</label>
+        <textarea id="appt_notes" placeholder="Anything to remember for this appointment"></textarea>
+        <div class="btn-row">
+          <button class="btn" onclick="saveAppointment()">Save appointment</button>
+          <button class="btn ghost" onclick="toggleForm('apptForm')">Cancel</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">Upcoming & past</div>
+        <div id="appointmentList"></div>
+      </div>
+    </section>
+
+    <!-- MARKETING -->
+    <section class="panel" id="panel-marketing">
+      <div class="card">
+        <div class="section-title">Generate marketing content</div>
+        <label class="f">What are you promoting?</label>
+        <textarea id="mk_prompt" placeholder="e.g. Weekend discount — 20% off all cakes, this Sat-Sun only"></textarea>
+        <div class="row" style="margin-top:10px;">
+          <div>
+            <label class="f">Platform</label>
+            <select id="mk_platform">
+              <option>Instagram caption</option>
+              <option>WhatsApp broadcast</option>
+              <option>Facebook post</option>
+              <option>SMS (short)</option>
+              <option>Google/local ad snippet</option>
+            </select>
+          </div>
+          <div>
+            <label class="f">Tone</label>
+            <select id="mk_tone">
+              <option>Friendly & local</option>
+              <option>Exciting & urgent</option>
+              <option>Elegant & premium</option>
+              <option>Simple & informative</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn gold" id="mk_btn" onclick="generateMarketing()">✦ Generate content</button>
+        </div>
+        <div id="mk_output"></div>
+      </div>
+      <div class="card">
+        <div class="section-title">Saved content</div>
+        <div id="marketingHistory"></div>
+      </div>
+    </section>
+
+    <!-- EXPENSES -->
+    <section class="panel" id="panel-expenses">
+      <div class="btn-row" style="margin-top:0;">
+        <button class="btn gold" onclick="toggleForm('expForm')">+ New expense</button>
+      </div>
+      <div class="card" id="expForm" style="display:none;">
+        <div class="section-title">New expense</div>
+        <label class="f">Description</label>
+        <input type="text" id="exp_desc" placeholder="e.g. Flour & sugar — 25kg" oninput="clearSuggestedCat()">
+        <div class="row" style="margin-top:10px;">
+          <div>
+            <label class="f">Amount</label>
+            <input type="number" id="exp_amount" placeholder="0">
+          </div>
+          <div>
+            <label class="f">Date</label>
+            <input type="date" id="exp_date">
+          </div>
+        </div>
+        <div style="margin-top:10px;">
+          <label class="f">Category</label>
+          <div class="row" style="align-items:center;">
+            <select id="exp_category">
+              <option>Raw materials / supplies</option>
+              <option>Rent</option>
+              <option>Utilities</option>
+              <option>Salaries / labour</option>
+              <option>Marketing</option>
+              <option>Transport / delivery</option>
+              <option>Equipment</option>
+              <option>Other</option>
+            </select>
+            <button class="btn ghost sm" style="flex:0 0 auto;" onclick="suggestCategory()" id="suggestBtn">✦ Suggest</button>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="saveExpense()">Save expense</button>
+          <button class="btn ghost" onclick="toggleForm('expForm')">Cancel</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title">All expenses</div>
+        <div id="expenseList"></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="disclaimer">Message drafts and marketing copy are AI-generated starting points — review before sending. All your data here is stored privately for your account only.</div>
+</div>
+
+<script>
+/* ---------------- Config ---------------- */
+const TABS = [
+  {id:"dashboard", label:"Dashboard", icon:'<path d="M4 13h6V4H4v9zM4 20h6v-4H4v4zM14 20h6V11h-6v9zM14 4v4h6V4h-6z" stroke="currentColor" stroke-width="1.6"/>'},
+  {id:"invoices", label:"Invoices", icon:'<path d="M6 3h9l3 3v15H6V3z" stroke="currentColor" stroke-width="1.6"/><path d="M9 9h6M9 13h6M9 17h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'},
+  {id:"messages", label:"Messages", icon:'<path d="M4 5h16v11H8l-4 4V5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>'},
+  {id:"appointments", label:"Appointments", icon:'<rect x="4" y="5" width="16" height="15" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M4 9h16M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'},
+  {id:"marketing", label:"Marketing", icon:'<path d="M4 10v4h4l5 4V6l-5 4H4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M18 9a4 4 0 010 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'},
+  {id:"expenses", label:"Expenses", icon:'<circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.6"/><path d="M12 8v8M9.5 10a2 2 0 012-2h1a2 2 0 010 4h-1a2 2 0 000 4h1a2 2 0 002-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>'}
+];
+const CURRENCY = "₹";
+
+let state = { invoices:[], appointments:[], expenses:[], messages:[], marketing:[] };
+let currentTab = "dashboard";
+
+/* ---------------- Storage helpers ---------------- */
+async function loadKey(key){
+  try{
+    const r = await window.storage.get(key);
+    return r && r.value ? JSON.parse(r.value) : [];
+  }catch(e){ return []; }
+}
+async function saveKey(key, val){
+  try{ await window.storage.set(key, JSON.stringify(val)); }
+  catch(e){ console.error("storage save failed", key, e); }
+}
+function genId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function fmt(n){ n = Number(n)||0; return CURRENCY + n.toLocaleString('en-IN', {maximumFractionDigits:2}); }
+
+/* ---------------- Claude API helper ---------------- */
+async function callClaude(userPrompt, systemPrompt){
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({
+      model:"claude-sonnet-4-6",
+      max_tokens:700,
+      system: systemPrompt,
+      messages:[{ role:"user", content:userPrompt }]
+    })
+  });
+  if(!response.ok) throw new Error("API error " + response.status);
+  const data = await response.json();
+  const text = (data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n").trim();
+  if(!text) throw new Error("Empty response");
+  return text;
+}
+
+/* ---------------- Nav ---------------- */
+function renderTabs(){
+  const nav = document.getElementById("tabs");
+  nav.innerHTML = "";
+  TABS.forEach(t=>{
+    const btn = document.createElement("button");
+    btn.className = "ledger-tab" + (t.id===currentTab ? " active":"");
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none">${t.icon}</svg><span>${t.label}</span>`;
+    btn.onclick = ()=> switchTab(t.id);
+    nav.appendChild(btn);
+  });
+}
+function switchTab(id){
+  currentTab = id;
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  document.getElementById("panel-"+id).classList.add("active");
+  renderTabs();
+  if(id==="dashboard") renderDashboard();
+}
+function toggleForm(id){
+  const el = document.getElementById(id);
+  el.style.display = el.style.display==="none" ? "block":"none";
+}
+
+/* ---------------- Dashboard ---------------- */
+function renderDashboard(){
+  const grid = document.getElementById("statGrid");
+  const totalInvoiced = state.invoices.reduce((s,i)=>s+i.total,0);
+  const totalPaid = state.invoices.filter(i=>i.status==="paid").reduce((s,i)=>s+i.total,0);
+  const totalPending = totalInvoiced - totalPaid;
+  const now = new Date();
+  const thisMonthExpenses = state.expenses.filter(e=>{
+    const d = new Date(e.date); return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
+  }).reduce((s,e)=>s+Number(e.amount),0);
+  const upcoming = state.appointments.filter(a=> new Date(a.date+"T"+(a.time||"00:00")) >= new Date(now.toDateString())).length;
+
+  grid.innerHTML = `
+    <div class="stat"><div class="label">Total invoiced</div><div class="val mono">${fmt(totalInvoiced)}</div></div>
+    <div class="stat"><div class="label">Pending payment</div><div class="val mono warn">${fmt(totalPending)}</div></div>
+    <div class="stat"><div class="label">Expenses this month</div><div class="val mono">${fmt(thisMonthExpenses)}</div></div>
+    <div class="stat"><div class="label">Upcoming appointments</div><div class="val mono">${upcoming}</div></div>
+  `;
+
+  const feed = [];
+  state.invoices.forEach(i=>feed.push({t:i.createdAt, text:`Invoice created for <b>${escapeHtml(i.client)}</b> — ${fmt(i.total)}`}));
+  state.expenses.forEach(e=>feed.push({t:e.date, text:`Expense logged — ${escapeHtml(e.desc)} (${fmt(e.amount)})`}));
+  state.appointments.forEach(a=>feed.push({t:a.date, text:`Appointment set — ${escapeHtml(a.title)}`}));
+  state.messages.forEach(m=>feed.push({t:m.createdAt, text:`Drafted a reply to a customer message`}));
+  feed.sort((a,b)=> new Date(b.t) - new Date(a.t));
+
+  const feedEl = document.getElementById("activityFeed");
+  if(feed.length===0){
+    feedEl.innerHTML = `<div class="empty"><div class="big">📋</div><p>Nothing logged yet. Start by creating an invoice or drafting a reply.</p></div>`;
+  } else {
+    feedEl.innerHTML = feed.slice(0,8).map(f=>`
+      <div class="feed-item"><div class="feed-dot"></div><div>${f.text}<div class="feed-time">${new Date(f.t).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</div></div></div>
+    `).join("");
+  }
+}
+function escapeHtml(s){ return String(s||"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+/* ---------------- Invoices ---------------- */
+function addInvoiceRow(desc="", qty=1, rate=""){
+  const wrap = document.getElementById("invItemRows");
+  const row = document.createElement("div");
+  row.className = "item-row";
+  row.innerHTML = `
+    <input type="text" placeholder="Item / service" class="desc" value="${escapeHtml(desc)}" oninput="updateInvoiceTotal()">
+    <input type="number" placeholder="Qty" class="qty" value="${qty}" oninput="updateInvoiceTotal()">
+    <input type="number" placeholder="Rate" class="rate" value="${rate}" oninput="updateInvoiceTotal()">
+    <button class="remove-row" onclick="this.parentElement.remove(); updateInvoiceTotal();">×</button>
+  `;
+  wrap.appendChild(row);
+  updateInvoiceTotal();
+}
+function updateInvoiceTotal(){
+  let total = 0;
+  document.querySelectorAll("#invItemRows .item-row").forEach(r=>{
+    const qty = Number(r.querySelector(".qty").value)||0;
+    const rate = Number(r.querySelector(".rate").value)||0;
+    total += qty*rate;
+  });
+  document.getElementById("invTotalPreview").textContent = fmt(total);
+}
+async function saveInvoice(){
+  const client = document.getElementById("inv_client").value.trim();
+  const due = document.getElementById("inv_due").value;
+  if(!client){ alert("Add a client name first."); return; }
+  const items = [];
+  let total = 0;
+  document.querySelectorAll("#invItemRows .item-row").forEach(r=>{
+    const desc = r.querySelector(".desc").value.trim();
+    const qty = Number(r.querySelector(".qty").value)||0;
+    const rate = Number(r.querySelector(".rate").value)||0;
+    if(desc) { items.push({desc,qty,rate}); total += qty*rate; }
+  });
+  const invoice = { id:genId(), client, due, items, total, status:"pending", createdAt:new Date().toISOString() };
+  state.invoices.unshift(invoice);
+  await saveKey("invoices", state.invoices);
+  document.getElementById("inv_client").value = "";
+  document.getElementById("inv_due").value = "";
+  document.getElementById("invItemRows").innerHTML = "";
+  addInvoiceRow();
+  toggleForm("invoiceForm");
+  renderInvoices();
+}
+function renderInvoices(){
+  const el = document.getElementById("invoiceList");
+  if(state.invoices.length===0){
+    el.innerHTML = `<div class="empty"><div class="big">🧾</div><p>No invoices yet. Create your first one above.</p></div>`;
+    return;
+  }
+  const now = new Date();
+  el.innerHTML = state.invoices.map(inv=>{
+    let statusTag = inv.status==="paid" ? '<span class="tag paid">Paid</span>'
+      : (inv.due && new Date(inv.due) < now) ? '<span class="tag overdue">Overdue</span>'
+      : '<span class="tag pending">Pending</span>';
+    return `
+    <div class="inv-item">
+      <div class="inv-left">
+        <div class="client">${escapeHtml(inv.client)}</div>
+        <div class="meta">${inv.items.length} item(s) ${inv.due ? "• due "+new Date(inv.due).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : ""}</div>
+      </div>
+      <div class="inv-right">
+        <span class="inv-amt mono">${fmt(inv.total)}</span>
+        ${statusTag}
+        ${inv.status!=="paid" ? `<button class="btn ghost sm" onclick="markPaid('${inv.id}')">Mark paid</button>` : ""}
+        <button class="icon-btn" onclick="deleteInvoice('${inv.id}')">Delete</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+async function markPaid(id){
+  const inv = state.invoices.find(i=>i.id===id);
+  if(inv){ inv.status = "paid"; await saveKey("invoices", state.invoices); renderInvoices(); }
+}
+async function deleteInvoice(id){
+  state.invoices = state.invoices.filter(i=>i.id!==id);
+  await saveKey("invoices", state.invoices);
+  renderInvoices();
+}
+
+/* ---------------- Messages (AI) ---------------- */
+async function generateReply(){
+  const input = document.getElementById("msg_input").value.trim();
+  const tone = document.getElementById("msg_tone").value;
+  const context = document.getElementById("msg_context").value.trim();
+  if(!input){ alert("Paste the customer's message first."); return; }
+  const btn = document.getElementById("msg_btn");
+  const out = document.getElementById("msg_output");
+  btn.disabled = true;
+  out.innerHTML = `<div class="ai-output loading">Drafting a reply...</div>`;
+  try{
+    const system = `You write short, ready-to-send customer service replies for a small business owner. Tone requested: ${tone}. ${context ? "Business context: "+context+"." : ""} Keep it under 80 words, no preamble, no markdown, just the message text ready to paste.`;
+    const reply = await callClaude(input, system);
+    out.innerHTML = `<div class="ai-output">${escapeHtml(reply)}</div>
+      <div class="btn-row"><button class="btn ghost sm" onclick="copyText(this)" data-text="${encodeURIComponent(reply)}">Copy</button>
+      <button class="btn sm" onclick="saveMessage('${encodeURIComponent(input)}','${encodeURIComponent(reply)}')">Save to history</button></div>`;
+  }catch(e){
+    out.innerHTML = `<div class="ai-output">Couldn't generate a reply right now. Please try again.</div>`;
+  }
+  btn.disabled = false;
+}
+async function saveMessage(inEnc, outEnc){
+  const entry = { id:genId(), incoming:decodeURIComponent(inEnc), reply:decodeURIComponent(outEnc), createdAt:new Date().toISOString() };
+  state.messages.unshift(entry);
+  await saveKey("messages", state.messages);
+  renderMessages();
+}
+function renderMessages(){
+  const el = document.getElementById("messageHistory");
+  if(state.messages.length===0){
+    el.innerHTML = `<div class="empty"><div class="big">💬</div><p>Saved drafts will show up here.</p></div>`;
+    return;
+  }
+  el.innerHTML = state.messages.map(m=>`
+    <div class="msg-history-item">
+      <div class="in"><b>Customer:</b> ${escapeHtml(m.incoming)}</div>
+      <div>${escapeHtml(m.reply)}</div>
+    </div>
+  `).join("");
+}
+function copyText(btn){
+  const text = decodeURIComponent(btn.getAttribute("data-text"));
+  navigator.clipboard.writeText(text).then(()=>{
+    const orig = btn.textContent; btn.textContent = "Copied!"; setTimeout(()=>btn.textContent=orig, 1500);
+  });
+}
+
+/* ---------------- Appointments ---------------- */
+async function saveAppointment(){
+  const title = document.getElementById("appt_title").value.trim();
+  const client = document.getElementById("appt_client").value.trim();
+  const date = document.getElementById("appt_date").value;
+  const time = document.getElementById("appt_time").value;
+  const notes = document.getElementById("appt_notes").value.trim();
+  if(!title || !date){ alert("Add at least a title and date."); return; }
+  const appt = { id:genId(), title, client, date, time, notes };
+  state.appointments.push(appt);
+  state.appointments.sort((a,b)=> new Date(a.date+"T"+(a.time||"00:00")) - new Date(b.date+"T"+(b.time||"00:00")));
+  await saveKey("appointments", state.appointments);
+  ["appt_title","appt_client","appt_date","appt_time","appt_notes"].forEach(id=>document.getElementById(id).value="");
+  toggleForm("apptForm");
+  renderAppointments();
+}
+function renderAppointments(){
+  const el = document.getElementById("appointmentList");
+  if(state.appointments.length===0){
+    el.innerHTML = `<div class="empty"><div class="big">📅</div><p>No appointments yet. Add your first one above.</p></div>`;
+    return;
+  }
+  el.innerHTML = state.appointments.map(a=>{
+    const d = new Date(a.date);
+    return `
+    <div class="appt-item">
+      <div class="appt-date"><div class="dow">${d.toLocaleDateString('en-IN',{weekday:'short'})}</div><div class="num">${d.getDate()}</div></div>
+      <div class="appt-info">
+        <div class="title">${escapeHtml(a.title)}</div>
+        <div class="meta">${a.client ? escapeHtml(a.client)+" • " : ""}${a.time || "No time set"}${a.notes ? " — "+escapeHtml(a.notes) : ""}</div>
+      </div>
+      <button class="icon-btn" onclick="deleteAppointment('${a.id}')">Delete</button>
+    </div>`;
+  }).join("");
+}
+async function deleteAppointment(id){
+  state.appointments = state.appointments.filter(a=>a.id!==id);
+  await saveKey("appointments", state.appointments);
+  renderAppointments();
+}
+
+/* ---------------- Marketing (AI) ---------------- */
+async function generateMarketing(){
+  const prompt = document.getElementById("mk_prompt").value.trim();
+  const platform = document.getElementById("mk_platform").value;
+  const tone = document.getElementById("mk_tone").value;
+  if(!prompt){ alert("Describe what you're promoting first."); return; }
+  const btn = document.getElementById("mk_btn");
+  const out = document.getElementById("mk_output");
+  btn.disabled = true;
+  out.innerHTML = `<div class="ai-output loading">Writing your content...</div>`;
+  try{
+    const system = `You write short marketing copy for a small business owner, formatted for: ${platform}. Tone: ${tone}. Include relevant emoji only if natural for the platform. No markdown formatting, no preamble — output only the ready-to-post text, plus 2-3 relevant hashtags on a new line if the platform is Instagram or Facebook.`;
+    const content = await callClaude(prompt, system);
+    out.innerHTML = `<div class="ai-output">${escapeHtml(content)}</div>
+      <div class="btn-row"><button class="btn ghost sm" onclick="copyText(this)" data-text="${encodeURIComponent(content)}">Copy</button>
+      <button class="btn sm" onclick="saveMarketing('${encodeURIComponent(prompt)}','${encodeURIComponent(platform)}','${encodeURIComponent(content)}')">Save</button></div>`;
+  }catch(e){
+    out.innerHTML = `<div class="ai-output">Couldn't generate content right now. Please try again.</div>`;
+  }
+  btn.disabled = false;
+}
+async function saveMarketing(pEnc, platEnc, cEnc){
+  const entry = { id:genId(), prompt:decodeURIComponent(pEnc), platform:decodeURIComponent(platEnc), content:decodeURIComponent(cEnc), createdAt:new Date().toISOString() };
+  state.marketing.unshift(entry);
+  await saveKey("marketing", state.marketing);
+  renderMarketing();
+}
+function renderMarketing(){
+  const el = document.getElementById("marketingHistory");
+  if(state.marketing.length===0){
+    el.innerHTML = `<div class="empty"><div class="big">📣</div><p>Saved content will show up here.</p></div>`;
+    return;
+  }
+  el.innerHTML = state.marketing.map(m=>`
+    <div class="msg-history-item">
+      <div class="in"><b>${escapeHtml(m.platform)}:</b> ${escapeHtml(m.prompt)}</div>
+      <div>${escapeHtml(m.content)}</div>
+    </div>
+  `).join("");
+}
+
+/* ---------------- Expenses ---------------- */
+function clearSuggestedCat(){ /* no-op placeholder for future inline hinting */ }
+async function suggestCategory(){
+  const desc = document.getElementById("exp_desc").value.trim();
+  if(!desc){ alert("Describe the expense first."); return; }
+  const btn = document.getElementById("suggestBtn");
+  btn.disabled = true; btn.textContent = "...";
+  try{
+    const system = `Classify this small-business expense into exactly one of these categories, respond with ONLY the category name, nothing else: Raw materials / supplies, Rent, Utilities, Salaries / labour, Marketing, Transport / delivery, Equipment, Other.`;
+    const cat = await callClaude(desc, system);
+    const select = document.getElementById("exp_category");
+    const match = Array.from(select.options).find(o=>o.value.toLowerCase()===cat.toLowerCase().trim());
+    if(match) select.value = match.value;
+  }catch(e){ /* silent fail, leave default category */ }
+  btn.disabled = false; btn.textContent = "✦ Suggest";
+}
+async function saveExpense(){
+  const desc = document.getElementById("exp_desc").value.trim();
+  const amount = Number(document.getElementById("exp_amount").value);
+  const date = document.getElementById("exp_date").value || new Date().toISOString().slice(0,10);
+  const category = document.getElementById("exp_category").value;
+  if(!desc || !amount){ alert("Add a description and amount."); return; }
+  const expense = { id:genId(), desc, amount, date, category };
+  state.expenses.unshift(expense);
+  await saveKey("expenses", state.expenses);
+  document.getElementById("exp_desc").value = "";
+  document.getElementById("exp_amount").value = "";
+  document.getElementById("exp_date").value = "";
+  toggleForm("expForm");
+  renderExpenses();
+}
+function renderExpenses(){
+  const el = document.getElementById("expenseList");
+  if(state.expenses.length===0){
+    el.innerHTML = `<div class="empty"><div class="big">💳</div><p>No expenses logged yet.</p></div>`;
+    return;
+  }
+  el.innerHTML = state.expenses.map(e=>`
+    <div class="exp-item">
+      <div>
+        <div>${escapeHtml(e.desc)}</div>
+        <span class="exp-cat">${escapeHtml(e.category)}</span>
+        <span style="font-size:11.5px;color:var(--ink-soft);"> • ${new Date(e.date).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="mono" style="font-weight:600;">${fmt(e.amount)}</span>
+        <button class="icon-btn" onclick="deleteExpense('${e.id}')">Delete</button>
+      </div>
+    </div>
+  `).join("");
+}
+async function deleteExpense(id){
+  state.expenses = state.expenses.filter(e=>e.id!==id);
+  await saveKey("expenses", state.expenses);
+  renderExpenses();
+}
+
+/* ---------------- Init ---------------- */
+async function init(){
+  document.getElementById("todayDate").textContent = new Date().toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'});
+  renderTabs();
+  addInvoiceRow();
+  const [inv, appt, exp, msg, mk] = await Promise.all([
+    loadKey("invoices"), loadKey("appointments"), loadKey("expenses"), loadKey("messages"), loadKey("marketing")
+  ]);
+  state.invoices = inv; state.appointments = appt; state.expenses = exp; state.messages = msg; state.marketing = mk;
+  renderDashboard();
+  renderInvoices();
+  renderAppointments();
+  renderMessages();
+  renderMarketing();
+  renderExpenses();
+}
+init();
+</script>
+</body>
+</html>
