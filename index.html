@@ -397,11 +397,13 @@ const TABS = [
   {id:"messages", label:"Messages", icon:'<path d="M4 5h16v11H8l-4 4V5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>'},
   {id:"appointments", label:"Appointments", icon:'<rect x="4" y="5" width="16" height="15" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M4 9h16M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'},
   {id:"marketing", label:"Marketing", icon:'<path d="M4 10v4h4l5 4V6l-5 4H4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M18 9a4 4 0 010 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'},
-  {id:"expenses", label:"Expenses", icon:'<circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.6"/><path d="M12 8v8M9.5 10a2 2 0 012-2h1a2 2 0 010 4h-1a2 2 0 000 4h1a2 2 0 002-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>'}
+ {id:"expenses", label:"Expenses", icon:'<circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.6"/><path d="M12 8v8M9.5 10a2 2 0 012-2h1a2 2 0 010 4h-1a2 2 0 000 4h1a2 2 0 002-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>'},
+
+{id:"customers", label:"Customers", icon:'<circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.6"/><path d="M4 20c0-4 3-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="1.6"/>'}
 ];
 const CURRENCY = "₹";
 
-let state = { invoices:[], appointments:[], expenses:[], messages:[], marketing:[] };
+let state = { invoices:[], appointments:[], expenses:[], messages:[], marketing:[], customers:[] };
 let currentTab = "dashboard";
 
 /* ---------------- Storage helpers ---------------- */
@@ -794,25 +796,7 @@ const supabaseClient = supabase.createClient(
   SUPABASE_KEY
 );
 
-console.log("LedgerMate connected to Supabase");async function testDatabase() {
-  const { data, error } = await supabaseClient
-    .from("customers")
-    .insert([
-      {
-        name: "Test Customer",
-        phone: "9999999999",
-        balance: 100
-      }
-    ]);
-
-  if (error) {
-    console.log("Database error:", error);
-  } else {
-    console.log("Customer added:", data);
-  }
-}
-
-testDatabase();
+console.log("LedgerMate connected to Supabase");
 </script>
 
 </html>
