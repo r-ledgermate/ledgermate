@@ -783,5 +783,17 @@ async function init(){
 }
 init();
 </script>
-</body>
+</body><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const SUPABASE_URL = "https://ahjyvuovxemgdlpamrei.supabase.co";
+const SUPABASE_KEY = "sb_publishable_68B9Pw3PMZbHTjf3q6NlrA_4dOpVpNx";
+
+const supabaseClient = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+console.log("LedgerMate connected to Supabase");
+</script>
 </html>
