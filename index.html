@@ -471,17 +471,25 @@ async function saveKey(key, val){
 
   try{
 
-    if(key === "invoices"){
+  if(key === "invoices"){
 
-      const invoice = val[0];
+  const invoice = val[0];
 
-      const { error } = await supabaseClient
-        .from("invoices")
-        .insert([invoice]);
+  const { error } = await supabaseClient
+    .from("invoices")
+    .insert([{
+      id: invoice.id,
+      client: invoice.client,
+      due: invoice.due,
+      items: invoice.items,
+      total: invoice.total,
+      status: invoice.status,
+      created_at: invoice.createdAt
+    }]);
 
-      if(error) throw error;
+  if(error) throw error;
 
-    }
+}
 
   }catch(e){
     console.error("save failed", key, e);
