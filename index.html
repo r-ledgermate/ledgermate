@@ -835,11 +835,30 @@ function renderCustomers(){
         </div>
       </div>
 
-      <div class="mono">
+           <div class="mono">
         ₹${c.balance || 0}
       </div>
+
+      <button onclick="deleteCustomer('${c.id}')">
+        Delete
+      </button>
+
     </div>
   `).join("");
+}
+  async function deleteCustomer(id){
+  const { error } = await supabaseClient
+    .from("customers")
+    .delete()
+    .eq("id", id);
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  state.customers = state.customers.filter(c => c.id !== id);
+  renderCustomers();
 }
 /* ---------------- Init ---------------- */
 async function init(){
