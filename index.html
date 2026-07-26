@@ -439,15 +439,51 @@ let state = { invoices:[], appointments:[], expenses:[], messages:[], marketing:
 let currentTab = "dashboard";
 
 /* ---------------- Storage helpers ---------------- */
+
 async function loadKey(key){
+
   try{
-    const r = await window.storage.get(key);
-    return r && r.value ? JSON.parse(r.value) : [];
-  }catch(e){ return []; }
+
+    if(key === "invoices"){
+      const { data, error } = await supabaseClient
+        .from("invoices")
+        .select("*")
+        .order("created_at", { ascending:false });
+
+      if(error) throw error;
+      return data || [];
+    }
+
+    return [];
+
+  }catch(e){
+    console.error("load failed", key, e);
+    return [];
+  }
+
 }
+
+
 async function saveKey(key, val){
-  try{ await window.storage.set(key, JSON.stringify(val)); }
-  catch(e){ console.error("storage save failed", key, e); }
+
+  try{
+
+    if(key === "invoices"){
+
+      const invoice = val[0];
+
+      const { error } = await supabaseClient
+        .from("invoices")
+        .insert([invoice]);
+
+      if(error) throw error;
+
+    }
+
+  }catch(e){
+    console.error("save failed", key, e);
+  }
+
 }
 function genId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 function fmt(n){ n = Number(n)||0; return CURRENCY + n.toLocaleString('en-IN', {maximumFractionDigits:2}); }
