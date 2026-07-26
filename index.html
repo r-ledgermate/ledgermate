@@ -568,6 +568,25 @@ async function saveInvoice(){
     if(desc) { items.push({desc,qty,rate}); total += qty*rate; }
   });
   const invoice = { id:genId(), client, due, items, total, status:"pending", createdAt:new Date().toISOString() };
+ // Update customer balance
+const customer = state.customers.find(c => c.name === client);
+
+if(customer){
+
+  const newBalance = Number(customer.balance || 0) + total;
+
+  await supabaseClient
+    .from("customers")
+    .update({
+      balance: newBalance
+    })
+    .eq("id", customer.id);
+
+  customer.balance = newBalance;
+
+  renderCustomers();
+}
+
   state.invoices.unshift(invoice);
   await saveKey("invoices", state.invoices);
   document.getElementById("inv_client").value = "";
