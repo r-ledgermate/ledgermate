@@ -496,6 +496,10 @@ async function switchTab(id){
     renderCustomers();
     loadCustomerDropdown();
   }
+  if(id==="invoices"){
+    state.invoices = await loadKey("invoices");
+    renderInvoices();
+  }
 }
 function toggleForm(id){
   const el = document.getElementById(id);
