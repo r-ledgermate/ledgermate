@@ -877,9 +877,13 @@ function renderCustomers(){
         ₹${c.balance || 0}
       </div>
 
-      <button onclick="deleteCustomer('${c.id}')">
-        Delete
-      </button>
+      <button onclick="editCustomer('${c.id}')">
+  Edit
+</button>
+
+<button onclick="deleteCustomer('${c.id}')">
+  Delete
+</button>
 
     </div>
   `).join("");
@@ -897,6 +901,20 @@ function renderCustomers(){
 
   state.customers = state.customers.filter(c => c.id !== id);
   renderCustomers();
+}
+  function editCustomer(id){
+
+  const customer = state.customers.find(c => c.id === id);
+
+  if(!customer) return;
+
+  document.getElementById("cust_name").value = customer.name || "";
+  document.getElementById("cust_phone").value = customer.phone || "";
+  document.getElementById("cust_balance").value = customer.balance || 0;
+
+  toggleForm("customerForm");
+
+  window.editingCustomerId = id;
 }
 /* ---------------- Init ---------------- */
 async function init(){
