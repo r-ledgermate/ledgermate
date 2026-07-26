@@ -823,7 +823,28 @@ async function saveCustomer(){
     return;
   }
 
-  const { data, error } = await supabaseClient
+  let data, error;
+
+if(window.editingCustomerId){
+
+  const result = await supabaseClient
+    .from("customers")
+    .update({
+      name: name,
+      phone: phone,
+      balance: balance
+    })
+    .eq("id", window.editingCustomerId)
+    .select();
+
+  data = result.data;
+  error = result.error;
+
+  window.editingCustomerId = null;
+
+}else{
+
+  const result = await supabaseClient
     .from("customers")
     .insert([
       {
@@ -833,6 +854,11 @@ async function saveCustomer(){
       }
     ])
     .select();
+
+  data = result.data;
+  error = result.error;
+
+}
 
   if(error){
     alert(error.message);
