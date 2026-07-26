@@ -483,12 +483,19 @@ function renderTabs(){
     nav.appendChild(btn);
   });
 }
-function switchTab(id){
+async function switchTab(id){
   currentTab = id;
   document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
   document.getElementById("panel-"+id).classList.add("active");
   renderTabs();
+
   if(id==="dashboard") renderDashboard();
+
+  if(id==="customers"){
+    state.customers = await loadCustomers();
+    renderCustomers();
+    loadCustomerDropdown();
+  }
 }
 function toggleForm(id){
   const el = document.getElementById(id);
