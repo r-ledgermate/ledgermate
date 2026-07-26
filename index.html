@@ -204,8 +204,10 @@
         <div class="section-title">New invoice</div>
         <div class="row">
           <div>
-            <label class="f">Client name</label>
-            <input type="text" id="inv_client" placeholder="e.g. Sharma Traders">
+           <label class="f">Customer</label>
+<select id="inv_client">
+  <option value="">Select customer</option>
+</select>
           </div>
           <div>
             <label class="f">Due date</label>
@@ -875,6 +877,24 @@ document.getElementById("cust_balance").value = "";
 
 toggleForm("customerForm");
 }
+  
+function loadCustomerDropdown(){
+
+  const select = document.getElementById("inv_client");
+
+  if(!select) return;
+
+  select.innerHTML = `<option value="">Select customer</option>`;
+
+  state.customers.forEach(c=>{
+    select.innerHTML += `
+      <option value="${escapeHtml(c.name)}">
+        ${escapeHtml(c.name)}
+      </option>
+    `;
+  });
+
+}
 
 function renderCustomers(){
 
@@ -968,7 +988,7 @@ state.customers = cust;
   renderMessages();
   renderMarketing();
   renderExpenses();
-  renderCustomers();
+  loadCustomerDropdown();
 }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
