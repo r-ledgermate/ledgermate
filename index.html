@@ -928,7 +928,7 @@ function renderCustomers(){
   state.customers = state.customers.filter(c => c.id !== id);
   renderCustomers();
 }
-  function editCustomer(id){
+ function editCustomer(id){
 
   const customer = state.customers.find(c => c.id === id);
 
@@ -938,9 +938,9 @@ function renderCustomers(){
   document.getElementById("cust_phone").value = customer.phone || "";
   document.getElementById("cust_balance").value = customer.balance || 0;
 
-  toggleForm("customerForm");
-
   window.editingCustomerId = id;
+
+  toggleForm("customerForm");
 }
 /* ---------------- Init ---------------- */
 async function init(){
