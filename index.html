@@ -865,8 +865,7 @@ if(window.editingCustomerId){
     console.log(error);
     return;
   }
-
-  state.customers.unshift(data[0]);
+state.customers = await loadCustomers();
   renderCustomers();
 window.editingCustomerId = null;
 
@@ -875,12 +874,6 @@ document.getElementById("cust_phone").value = "";
 document.getElementById("cust_balance").value = "";
 
 toggleForm("customerForm");
-}
-  document.getElementById("cust_name").value = "";
-  document.getElementById("cust_phone").value = "";
-  document.getElementById("cust_balance").value = "";
-
-  toggleForm("customerForm");
 }
 
 function renderCustomers(){
