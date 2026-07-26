@@ -868,7 +868,14 @@ if(window.editingCustomerId){
 
   state.customers.unshift(data[0]);
   renderCustomers();
+window.editingCustomerId = null;
 
+document.getElementById("cust_name").value = "";
+document.getElementById("cust_phone").value = "";
+document.getElementById("cust_balance").value = "";
+
+toggleForm("customerForm");
+}
   document.getElementById("cust_name").value = "";
   document.getElementById("cust_phone").value = "";
   document.getElementById("cust_balance").value = "";
