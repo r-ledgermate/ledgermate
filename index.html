@@ -812,6 +812,44 @@ async function loadCustomers(){
   return data || [];
 }
 
+async function saveCustomer(){
+
+  const name = document.getElementById("cust_name").value.trim();
+  const phone = document.getElementById("cust_phone").value.trim();
+  const balance = Number(document.getElementById("cust_balance").value || 0);
+
+  if(!name){
+    alert("Enter customer name");
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("customers")
+    .insert([
+      {
+        name: name,
+        phone: phone,
+        balance: balance
+      }
+    ])
+    .select();
+
+  if(error){
+    alert(error.message);
+    console.log(error);
+    return;
+  }
+
+  state.customers.unshift(data[0]);
+  renderCustomers();
+
+  document.getElementById("cust_name").value = "";
+  document.getElementById("cust_phone").value = "";
+  document.getElementById("cust_balance").value = "";
+
+  toggleForm("customerForm");
+}
+
 function renderCustomers(){
 
   const el = document.getElementById("customerList");
