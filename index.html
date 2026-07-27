@@ -377,7 +377,9 @@
   <button class="btn ghost sm" onclick="printLedger()">
     Print Statement
   </button>
-
+<button class="btn ghost sm" onclick="shareLedgerWhatsApp()">
+  WhatsApp Statement
+</button>
   <button class="btn ghost sm" onclick="document.getElementById('ledgerBox').style.display='none'">
     Close
   </button>
@@ -1226,6 +1228,20 @@ async function viewLedger(id){
 
   win.document.close();
   win.print();
+
+}
+  function shareLedgerWhatsApp(){
+
+  const content = document.getElementById("ledgerList").innerText;
+
+  const message = 
+`LedgerMate Statement
+
+${content}`;
+
+  const url = "https://wa.me/?text=" + encodeURIComponent(message);
+
+  window.open(url, "_blank");
 
 }
  function editCustomer(id){
