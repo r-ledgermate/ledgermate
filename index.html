@@ -1160,8 +1160,21 @@ async function viewLedger(id){
   });
 
 
-  document.getElementById("ledgerList").innerHTML =
-    html || "No transactions yet";
+ document.getElementById("ledgerList").innerHTML = `
+
+  <div class="card" style="margin-bottom:10px;">
+    <div style="font-size:13px;">
+      ${escapeHtml(customer.name)}
+    </div>
+
+    <div style="font-size:22px;font-weight:700;margin-top:6px;">
+      Outstanding ₹${balance}
+    </div>
+  </div>
+
+  ${html || "No transactions yet"}
+
+`;
 
 
   document.getElementById("ledgerBox").style.display="block";
