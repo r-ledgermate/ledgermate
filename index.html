@@ -1000,11 +1000,14 @@ function loadCustomerDropdown(){
   select.innerHTML = `<option value="">Select customer</option>`;
 
   state.customers.forEach(c=>{
-    select.innerHTML += `
-      <option value="${escapeHtml(c.name)}">
-        ${escapeHtml(c.name)}
-      </option>
-    `;
+
+    const option = document.createElement("option");
+
+    option.value = c.name;
+    option.textContent = c.name;
+
+    select.appendChild(option);
+
   });
 
 }
