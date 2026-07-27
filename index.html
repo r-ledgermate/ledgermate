@@ -1003,7 +1003,9 @@ function renderCustomers(){
       <button onclick="editCustomer('${c.id}')">
   Edit
 </button>
-
+<button onclick="receivePayment('${c.id}')">
+  Receive Payment
+</button>
 <button onclick="deleteCustomer('${c.id}')">
   Delete
 </button>
@@ -1025,6 +1027,51 @@ function renderCustomers(){
   state.customers = state.customers.filter(c => c.id !== id);
   renderCustomers();
 }
+  
+async function receivePayment(id){
+
+  const amount = Number(prompt("Enter payment amount"));
+
+  if(!amount || amount <= 0){
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("payments")
+    .insert([
+      {
+        id: genId(),
+        customer_id: id,
+        amount: amount,
+        date: new Date().toISOString(),
+        note: "Payment received"
+      }
+    ]);
+
+  if(error){
+    alert(error.message);
+    return;
+  }
+
+  const customer = state.customers.find(c => c.id === id);
+
+  if(customer){
+
+    customer.balance = Number(customer.balance || 0) - amount;
+
+    await supabaseClient
+      .from("customers")
+      .update({
+        balance: customer.balance
+      })
+      .eq("id", id);
+
+  }
+
+  state.customers = await loadCustomers();
+  renderCustomers();
+}
+
  function editCustomer(id){
 
   const customer = state.customers.find(c => c.id === id);
