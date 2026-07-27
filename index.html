@@ -371,8 +371,12 @@
   </div>
 
 </section>
-  <div class="card" id="ledgerBox" style="display:none;">
+<div class="card" id="ledgerBox" style="display:none;">
   <div class="section-title">Customer Ledger</div>
+
+  <button class="btn ghost sm" onclick="printLedger()">
+    Print Statement
+  </button>
 
   <button class="btn ghost sm" onclick="document.getElementById('ledgerBox').style.display='none'">
     Close
@@ -1183,6 +1187,45 @@ async function viewLedger(id){
 
 
   document.getElementById("ledgerBox").style.display="block";
+
+}
+  function printLedger(){
+
+  const content = document.getElementById("ledgerList").innerHTML;
+
+  const win = window.open("", "", "width=800,height=600");
+
+  win.document.write(`
+    <html>
+    <head>
+      <title>Customer Statement</title>
+      <style>
+        body{
+          font-family:Arial;
+          padding:20px;
+        }
+        .exp-item{
+          display:flex;
+          justify-content:space-between;
+          padding:10px;
+          border-bottom:1px solid #ddd;
+        }
+      </style>
+    </head>
+
+    <body>
+
+      <h2>LedgerMate Statement</h2>
+
+      ${content}
+
+    </body>
+
+    </html>
+  `);
+
+  win.document.close();
+  win.print();
 
 }
  function editCustomer(id){
