@@ -512,6 +512,13 @@ async function saveKey(key, val){
 
 }
 function genId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function generateInvoiceNo(){
+
+  const count = state.invoices.length + 1;
+
+  return "INV-" + String(count).padStart(4,"0");
+
+}
 function fmt(n){ n = Number(n)||0; return CURRENCY + n.toLocaleString('en-IN', {maximumFractionDigits:2}); }
 
 /* ---------------- Claude API helper ---------------- */
@@ -640,8 +647,18 @@ async function saveInvoice(){
     const rate = Number(r.querySelector(".rate").value)||0;
     if(desc) { items.push({desc,qty,rate}); total += qty*rate; }
   });
-  const invoice = { id:genId(), client, due, items, total, status:"pending", createdAt:new Date().toISOString() };
- // Update customer balance
+ const invoice = { 
+  id: genId(),
+  invoice_no: generateInvoiceNo(),
+  client,
+  due,
+  items,
+  total,
+  status:"pending",
+  createdAt:new Date().toISOString()
+};
+
+// Update customer balance
 const customer = state.customers.find(c => c.name === client);
 
 if(customer){
@@ -683,7 +700,11 @@ function renderInvoices(){
     return `
     <div class="inv-item">
       <div class="inv-left">
-        <div class="client">${escapeHtml(inv.client)}</div>
+       <div class="client">
+  ${inv.invoice_no || ""}
+  <br>
+  ${escapeHtml(inv.client)}
+</div>
         <div class="meta">${inv.items.length} item(s) ${inv.due ? "• due "+new Date(inv.due).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : ""}</div>
       </div>
       <div class="inv-right">
