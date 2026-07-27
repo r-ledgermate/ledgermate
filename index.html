@@ -1097,40 +1097,63 @@ async function viewLedger(id){
     .eq("customer_id", id);
 
 
-  let html = "";
+  let transactions = [];
+
 
   (invoices.data || []).forEach(inv => {
 
-    html += `
-      <div class="exp-item">
-        <div>
-          Invoice
-          <br>
-          ${inv.created_at?.slice(0,10) || ""}
-        </div>
-
-        <div>
-          +₹${inv.total}
-        </div>
-      </div>
-    `;
+    transactions.push({
+      date: inv.created_at || inv.createdAt,
+      type: "Invoice",
+      amount: Number(inv.total || 0)
+    });
 
   });
 
 
   (payments.data || []).forEach(p => {
 
+    transactions.push({
+      date: p.date,
+      type: "Payment",
+      amount: -Number(p.amount || 0)
+    });
+
+  });
+
+
+  transactions.sort((a,b)=> new Date(a.date) - new Date(b.date));
+
+
+  let balance = 0;
+  let html = "";
+
+
+  transactions.forEach(t => {
+
+    balance += t.amount;
+
+
     html += `
       <div class="exp-item">
-        <div>
-          Payment
-          <br>
-          ${p.date?.slice(0,10) || ""}
-        </div>
 
         <div>
-          -₹${p.amount}
+          <div style="font-weight:600;">
+            ${t.type}
+          </div>
+
+          <div style="font-size:12px;">
+            ${new Date(t.date).toLocaleDateString('en-IN')}
+          </div>
         </div>
+
+
+        <div class="mono">
+          ${t.amount >= 0 ? "+" : "-"}₹${Math.abs(t.amount)}
+          <br>
+          Balance ₹${balance}
+        </div>
+
       </div>
     `;
 
