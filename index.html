@@ -225,10 +225,19 @@
           <button class="btn ghost" onclick="toggleForm('invoiceForm')">Cancel</button>
         </div>
       </div>
-      <div class="card">
-        <div class="section-title">All invoices</div>
-        <div id="invoiceList"></div>
-      </div>
+     <div class="card">
+  <div class="section-title">All invoices</div>
+
+  <input
+    type="text"
+    id="invoiceSearch"
+    placeholder="Search invoice number or customer..."
+    oninput="renderInvoices()"
+    style="margin-bottom:12px;"
+  >
+
+  <div id="invoiceList"></div>
+</div>
     </section>
 
     <!-- MESSAGES -->
@@ -699,12 +708,21 @@ if(customer){
 }
 function renderInvoices(){
   const el = document.getElementById("invoiceList");
+  const search =
+  (document.getElementById("invoiceSearch")?.value || "")
+    .toLowerCase()
+    .trim();
   if(state.invoices.length===0){
     el.innerHTML = `<div class="empty"><div class="big">🧾</div><p>No invoices yet. Create your first one above.</p></div>`;
     return;
   }
   const now = new Date();
-  el.innerHTML = state.invoices.map(inv=>{
+ el.innerHTML = state.invoices
+  .filter(inv =>
+    (inv.client || "").toLowerCase().includes(search) ||
+    (inv.invoice_no || "").toLowerCase().includes(search)
+  )
+  .map(inv=>{
     let statusTag = inv.status==="paid" ? '<span class="tag paid">Paid</span>'
       : (inv.due && new Date(inv.due) < now) ? '<span class="tag overdue">Overdue</span>'
       : '<span class="tag pending">Pending</span>';
