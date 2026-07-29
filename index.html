@@ -365,11 +365,19 @@
     </div>
   </div>
 
-  <div class="card">
-    <div class="section-title">Customers</div>
-    <div id="customerList"></div>
-  </div>
+<div class="card">
+  <div class="section-title">Customers</div>
 
+  <input
+    type="text"
+    id="customerSearch"
+    placeholder="Search customers..."
+    oninput="renderCustomers()"
+    style="margin-bottom:12px;"
+  >
+
+  <div id="customerList"></div>
+</div>
 </section>
 <div class="card" id="ledgerBox" style="display:none;">
   <div class="section-title">Customer Ledger</div>
@@ -1018,7 +1026,10 @@ function loadCustomerDropdown(){
 function renderCustomers(){
 
   const el = document.getElementById("customerList");
-
+const search =
+  (document.getElementById("customerSearch")?.value || "")
+    .toLowerCase()
+    .trim();
   if(!el) return;
 
   if(state.customers.length === 0){
@@ -1029,7 +1040,12 @@ function renderCustomers(){
     return;
   }
 
-  el.innerHTML = state.customers.map(c => `
+  el.innerHTML = state.customers
+  .filter(c =>
+    c.name.toLowerCase().includes(search) ||
+    (c.phone || "").includes(search)
+  )
+  .map(c => `
     <div class="exp-item">
       <div>
         <div style="font-weight:600;">${escapeHtml(c.name)}</div>
