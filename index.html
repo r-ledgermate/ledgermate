@@ -493,14 +493,16 @@ async function saveKey(key, val){
   const { error } = await supabaseClient
     .from("invoices")
     .insert([{
-      id: invoice.id,
-      client: invoice.client,
-      due: invoice.due,
-      items: invoice.items,
-      total: invoice.total,
-      status: invoice.status,
-      created_at: invoice.createdAt
-    }]);
+  id: invoice.id,
+  customer_id: invoice.customer_id,
+  client: invoice.client,
+  due: invoice.due,
+  items: invoice.items,
+  total: invoice.total,
+  status: invoice.status,
+  created_at: invoice.createdAt,
+  invoice_no: invoice.invoice_no
+}]);
 
   if(error) throw error;
 
@@ -647,9 +649,10 @@ async function saveInvoice(){
     const rate = Number(r.querySelector(".rate").value)||0;
     if(desc) { items.push({desc,qty,rate}); total += qty*rate; }
   });
- const invoice = { 
+const invoice = { 
   id: genId(),
   invoice_no: generateInvoiceNo(),
+  customer_id: customer ? customer.id : null,
   client,
   due,
   items,
