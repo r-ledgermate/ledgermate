@@ -1559,13 +1559,17 @@ async function init(){
   renderTabs();
   addInvoiceRow();
     const [inv, appt, exp, msg, mk, cust] = await Promise.all([
-  loadKey("invoices"), 
-  loadKey("appointments"), 
-  loadKey("expenses"), 
-  loadKey("messages"), 
+const [inv, appt, exp, msg, mk, cust, biz] = await Promise.all([
+  loadKey("invoices"),
+  loadKey("appointments"),
+  loadKey("expenses"),
+  loadKey("messages"),
   loadKey("marketing"),
-  loadCustomers()
-  ]);
+  loadKey("customers"),
+  loadKey("business")
+]);
+
+state.business = biz || {};
   state.invoices = inv;
 state.appointments = appt;
 state.expenses = exp;
