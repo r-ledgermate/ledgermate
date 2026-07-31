@@ -236,9 +236,28 @@
     style="margin-bottom:12px;"
   >
 
-  <div id="invoiceList"></div>
+ <div id="invoiceList"></div>
 </div>
-    </section>
+
+<div class="card" id="invoicePreview" style="display:none; margin-top:15px;">
+
+  <div class="section-title">Invoice Preview</div>
+
+  <div id="invoicePreviewContent"></div>
+
+  <div class="btn-row" style="margin-top:15px;">
+    <button class="btn" onclick="window.print()">
+      🖨 Print
+    </button>
+
+    <button class="btn ghost" onclick="document.getElementById('invoicePreview').style.display='none'">
+      Close
+    </button>
+  </div>
+
+</div>
+
+</section>
 
     <!-- MESSAGES -->
     <section class="panel" id="panel-messages">
@@ -773,8 +792,15 @@ function renderInvoices(){
       <div class="inv-right">
         <span class="inv-amt mono">${fmt(inv.total)}</span>
         ${statusTag}
-        ${inv.status!=="paid" ? `<button class="btn ghost sm" onclick="markPaid('${inv.id}')">Mark paid</button>` : ""}
-        <button class="icon-btn" onclick="deleteInvoice('${inv.id}')">Delete</button>
+     ${inv.status!=="paid" ? `<button class="btn ghost sm" onclick="markPaid('${inv.id}')">Mark paid</button>` : ""}
+
+<button class="btn ghost sm" onclick="viewInvoice('${inv.id}')">
+  View
+</button>
+
+<button class="icon-btn" onclick="deleteInvoice('${inv.id}')">
+  Delete
+</button>
       </div>
     </div>`;
   }).join("");
@@ -787,6 +813,54 @@ async function deleteInvoice(id){
   state.invoices = state.invoices.filter(i=>i.id!==id);
   await saveKey("invoices", state.invoices);
   renderInvoices();
+}
+function viewInvoice(id){
+
+  const inv = state.invoices.find(i => i.id === id);
+
+  if(!inv) return;
+
+  let rows = "";
+
+  inv.items.forEach(item => {
+
+    rows += `
+      <tr>
+        <td>${escapeHtml(item.desc)}</td>
+        <td>${item.qty}</td>
+        <td>${fmt(item.rate)}</td>
+        <td>${fmt(item.qty * item.rate)}</td>
+      </tr>
+    `;
+
+  });
+
+  document.getElementById("invoicePreviewContent").innerHTML = `
+    <h2>Invoice ${inv.invoice_no || ""}</h2>
+
+    <p><strong>Customer:</strong> ${escapeHtml(inv.client)}</p>
+
+    <p><strong>Due:</strong> ${inv.due || "-"}</p>
+
+    <table style="width:100%;border-collapse:collapse;margin-top:15px;">
+      <tr>
+        <th align="left">Item</th>
+        <th>Qty</th>
+        <th>Rate</th>
+        <th>Total</th>
+      </tr>
+
+      ${rows}
+
+      <tr>
+        <td colspan="3"><strong>Grand Total</strong></td>
+        <td><strong>${fmt(inv.total)}</strong></td>
+      </tr>
+    </table>
+  `;
+
+  document.getElementById("invoicePreview").style.display = "block";
+
 }
 
 /* ---------------- Messages (AI) ---------------- */
