@@ -597,21 +597,55 @@ function toggleForm(id){
 /* ---------------- Dashboard ---------------- */
 function renderDashboard(){
   const grid = document.getElementById("statGrid");
-  const totalInvoiced = state.invoices.reduce((s,i)=>s+i.total,0);
-  const totalPaid = state.invoices.filter(i=>i.status==="paid").reduce((s,i)=>s+i.total,0);
-  const totalPending = totalInvoiced - totalPaid;
-  const now = new Date();
-  const thisMonthExpenses = state.expenses.filter(e=>{
-    const d = new Date(e.date); return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
-  }).reduce((s,e)=>s+Number(e.amount),0);
-  const upcoming = state.appointments.filter(a=> new Date(a.date+"T"+(a.time||"00:00")) >= new Date(now.toDateString())).length;
+ const totalSales = state.invoices.reduce((s,i)=>s + Number(i.total || 0), 0);
+
+const outstanding = state.customers.reduce(
+  (s,c)=> s + Number(c.balance || 0),
+  0
+);
+
+const totalExpenses = state.expenses.reduce(
+  (s,e)=> s + Number(e.amount || 0),
+  0
+);
+
+const paymentsReceived = totalSales - outstanding;
+
+const netProfit = totalSales - totalExpenses;
+
+const totalCustomers = state.customers.length;
 
   grid.innerHTML = `
-    <div class="stat"><div class="label">Total invoiced</div><div class="val mono">${fmt(totalInvoiced)}</div></div>
-    <div class="stat"><div class="label">Pending payment</div><div class="val mono warn">${fmt(totalPending)}</div></div>
-    <div class="stat"><div class="label">Expenses this month</div><div class="val mono">${fmt(thisMonthExpenses)}</div></div>
-    <div class="stat"><div class="label">Upcoming appointments</div><div class="val mono">${upcoming}</div></div>
-  `;
+    <div class="stat">
+      <div class="label">📈 Total Sales</div>
+      <div class="val mono">${fmt(totalSales)}</div>
+    </div>
+
+    <div class="stat">
+      <div class="label">💰 Outstanding</div>
+      <div class="val mono warn">${fmt(outstanding)}</div>
+    </div>
+
+    <div class="stat">
+      <div class="label">💵 Payments Received</div>
+      <div class="val mono">${fmt(paymentsReceived)}</div>
+    </div>
+
+    <div class="stat">
+      <div class="label">💸 Expenses</div>
+      <div class="val mono">${fmt(totalExpenses)}</div>
+    </div>
+
+    <div class="stat">
+      <div class="label">📊 Net Profit</div>
+      <div class="val mono">${fmt(netProfit)}</div>
+    </div>
+
+    <div class="stat">
+      <div class="label">👥 Customers</div>
+      <div class="val mono">${totalCustomers}</div>
+    </div>
+`;
 
   const feed = [];
   state.invoices.forEach(i=>feed.push({t:i.createdAt, text:`Invoice created for <b>${escapeHtml(i.client)}</b> — ${fmt(i.total)}`}));
