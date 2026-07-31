@@ -557,17 +557,7 @@ if (key === "business") {
 
   return data || {};
 }
-  const { data, error } = await supabaseClient
-    .from("business")
-    .select("*")
-    .limit(1)
-    .maybeSingle();
 
-  if(error) throw error;
-
-  return data || {};
-
-}
     if(key === "invoices"){
       const { data, error } = await supabaseClient
         .from("invoices")
@@ -589,7 +579,6 @@ if (key === "business") {
   }
 
 }
-
 
 async function saveKey(key, val){
 
