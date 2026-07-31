@@ -834,15 +834,39 @@ function viewInvoice(id){
     `;
 
   });
+document.getElementById("invoicePreviewContent").innerHTML = `
 
-  document.getElementById("invoicePreviewContent").innerHTML = `
-    <h2>Invoice ${inv.invoice_no || ""}</h2>
+<div style="text-align:center;margin-bottom:20px;border-bottom:2px solid #ddd;padding-bottom:15px;">
 
-    <p><strong>Customer:</strong> ${escapeHtml(inv.client)}</p>
+  <h1 style="margin:0;">Craftymind Studio</h1>
 
-    <p><strong>Due:</strong> ${inv.due || "-"}</p>
+  <div style="font-size:14px;color:#666;">
+    Business Management
+  </div>
 
-    <table style="width:100%;border-collapse:collapse;margin-top:15px;">
+  <div style="font-size:13px;color:#666;">
+    📞 +91 XXXXXXXXXX
+  </div>
+
+</div>
+
+<h2 style="margin-bottom:15px;">
+  Invoice ${inv.invoice_no || ""}
+</h2>
+
+<p><strong>Invoice Date:</strong>
+${new Date(inv.createdAt || inv.created_at).toLocaleDateString("en-IN")}
+</p>
+
+<p><strong>Customer:</strong>
+${escapeHtml(inv.client)}
+</p>
+
+<p><strong>Due Date:</strong>
+${inv.due || "-"}
+</p>
+
+<table style="width:100%;border-collapse:collapse;margin-top:20px;">
       <tr>
         <th align="left">Item</th>
         <th>Qty</th>
