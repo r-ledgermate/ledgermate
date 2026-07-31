@@ -545,23 +545,17 @@ let currentTab = "dashboard";
 async function loadKey(key){
 
   try{
-if(key === "business"){
+if (key === "business") {
 
-  const { error } = await supabaseClient
+  const { data, error } = await supabaseClient
     .from("business")
-    .upsert([{
-      id: "00000000-0000-0000-0000-000000000001",
-      name: val.name,
-      owner: val.owner,
-      phone: val.phone,
-      email: val.email,
-      address: val.address,
-      invoice_prefix: val.prefix
-    }]);
+    .select("*")
+    .eq("id", "00000000-0000-0000-0000-000000000001")
+    .maybeSingle();
 
   if (error) throw error;
 
-  return;
+  return data || {};
 }
   const { data, error } = await supabaseClient
     .from("business")
@@ -601,27 +595,45 @@ async function saveKey(key, val){
 
   try{
 
-  if(key === "invoices"){
+    if(key === "business"){
 
-  const invoice = val[0];
+      const { error } = await supabaseClient
+        .from("business")
+        .upsert([{
+          id: "00000000-0000-0000-0000-000000000001",
+          name: val.name,
+          owner: val.owner,
+          phone: val.phone,
+          email: val.email,
+          address: val.address,
+          invoice_prefix: val.prefix
+        }]);
 
-  const { error } = await supabaseClient
-    .from("invoices")
-    .insert([{
-  id: invoice.id,
-  customer_id: invoice.customer_id,
-  client: invoice.client,
-  due: invoice.due,
-  items: invoice.items,
-  total: invoice.total,
-  status: invoice.status,
-  created_at: invoice.createdAt,
-  invoice_no: invoice.invoice_no
-}]);
+      if(error) throw error;
+      return;
+    }
 
-  if(error) throw error;
+    if(key === "invoices"){
 
-}
+      const invoice = val[0];
+
+      const { error } = await supabaseClient
+        .from("invoices")
+        .insert([{
+          id: invoice.id,
+          customer_id: invoice.customer_id,
+          client: invoice.client,
+          due: invoice.due,
+          items: invoice.items,
+          total: invoice.total,
+          status: invoice.status,
+          created_at: invoice.createdAt,
+          invoice_no: invoice.invoice_no
+        }]);
+
+      if(error) throw error;
+      return;
+    }
 
   }catch(e){
     console.error("save failed", key, e);
