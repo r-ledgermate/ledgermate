@@ -529,7 +529,15 @@ const TABS = [
 ];
 const CURRENCY = "₹";
 
-let state = { invoices:[], appointments:[], expenses:[], messages:[], marketing:[], customers:[] };
+let state = {
+  invoices:[],
+  appointments:[],
+  expenses:[],
+  messages:[],
+  marketing:[],
+  customers:[],
+  business:{}
+};
 let currentTab = "dashboard";
 
 /* ---------------- Storage helpers ---------------- */
@@ -537,7 +545,35 @@ let currentTab = "dashboard";
 async function loadKey(key){
 
   try{
+if(key === "business"){
 
+  const { error } = await supabaseClient
+    .from("business")
+    .upsert([{
+      id: "00000000-0000-0000-0000-000000000001",
+      name: val.name,
+      owner: val.owner,
+      phone: val.phone,
+      email: val.email,
+      address: val.address,
+      invoice_prefix: val.prefix
+    }]);
+
+  if (error) throw error;
+
+  return;
+}
+  const { data, error } = await supabaseClient
+    .from("business")
+    .select("*")
+    .limit(1)
+    .maybeSingle();
+
+  if(error) throw error;
+
+  return data || {};
+
+}
     if(key === "invoices"){
       const { data, error } = await supabaseClient
         .from("invoices")
@@ -929,7 +965,29 @@ ${inv.due || "-"}
   document.getElementById("invoicePreview").style.display = "block";
 
 }
+async function saveBusinessSettings(){
 
+  state.business = {
+
+    name: document.getElementById("biz_name").value,
+
+    owner: document.getElementById("biz_owner").value,
+
+    phone: document.getElementById("biz_phone").value,
+
+    email: document.getElementById("biz_email").value,
+
+    address: document.getElementById("biz_address").value,
+
+    prefix: document.getElementById("biz_prefix").value || "INV"
+
+  };
+
+  await saveKey("business", state.business);
+
+  alert("Business settings saved!");
+
+}
 /* ---------------- Messages (AI) ---------------- */
 async function generateReply(){
   const input = document.getElementById("msg_input").value.trim();
