@@ -687,6 +687,14 @@ async function switchTab(id){
     state.invoices = await loadKey("invoices");
     renderInvoices();
   }
+  if(id==="settings"){
+  document.getElementById("biz_name").value = state.business?.name || "";
+  document.getElementById("biz_owner").value = state.business?.owner || "";
+  document.getElementById("biz_phone").value = state.business?.phone || "";
+  document.getElementById("biz_email").value = state.business?.email || "";
+  document.getElementById("biz_address").value = state.business?.address || "";
+  document.getElementById("biz_prefix").value = state.business?.prefix || "INV";
+}
 }
 function toggleForm(id){
   const el = document.getElementById(id);
